@@ -22,7 +22,7 @@ class TestLocker(unittest.TestCase):
 
     def test_meta(self):
         locker = Locker(NAME, PASSWORD)
-        self.assertEqual(locker.path, NAME)
+        self.assertEqual(locker.path, os.path.abspath(NAME))
         self.assertEqual(locker.password, PASSWORD)
         with self.assertRaises(AttributeError):
             locker.contents
