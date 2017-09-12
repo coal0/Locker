@@ -1,3 +1,20 @@
+"""Locker is a Python package for securely storing data.
+For more information:
+
+See the GitHub page at https://github.com/Coal0/Locker/
+See the LICENSE text at https://github.com/Coal0/Locker/blob/master/LICENSE
+
+Constants defined here:
+
+_PASSWORD_LENGTH: The length of the Scrypt password to use for encryption.
+_PASSWORD_HASH: The hashing algorithm to use for hashing.
+_PASSWORD_ITERATIONS: The PBKDF2HMAC `iterations` argument.
+_PASSWORD_N: The Scrypt `n` argument.
+_PASSWORD_R: The Scrypt `r` argument.
+_PASSWORD_P: The Scrypt `p` argument.
+_PASSWORD_BACKEND: The cryptography backend.
+"""
+
 import base64
 import os
 
@@ -27,20 +44,57 @@ def _validate(key="".encode(), value="".encode()):
 
 
 class Locker:
+    """A Locker object represents a secured 'locker' file.
+
+    Methods defined here:
+    * __init__: Constructor
+    * _populate: <Private method>
+    * _yield_combinations: <Private method>
+    * _requires_open_locker: <Private method>
+    * _cache_open_locker: <Private method>
+    * open: Open the locker and decrypt it
+    * get: Get an entry from the locker
+    * set: Add an entry to the locker
+    * delete: Delete an entry from the locker
+    * close: Close the locker and save changes
+
+    Static methods defined here:
+    * create_locker: Create a new locker
+
+    Constants defined here:
+    BUFFER_SIZE: The buffer size for reading locker entries.
+    NEWLINE: The newline character splitting locker entries.
+    SEPARATOR: The separator character splitting key:value combinations.
+    """
     BUFFER_SIZE = 65536
     NEWLINE = "\n".encode()
     SEPARATOR = ":".encode()
 
     def __init__(self, path, password):
+        """__init__(path: str, password: bytes) -> None
+        Constructor.
+        Arguments:
+        * path: The locker to open.
+                This path must exist. Should you need to create a new
+                locker, call Locker.create_locker instead.
+        * password: The password to use for encryption.
+        """
         if not isinstance(password, bytes):
             raise TypeError(
                 "expected 'password' argument to be instance of 'bytes'"
             )
-        self.path = path
+        self.path = os.path.abspath(path)
         self.password = password
 
     @staticmethod
     def create_locker(path, password):
+        """create_locker(path: str, password: bytes) -> None
+        Create a new locker and write salt|Scrypt(password) to it.
+        Arguments:
+        * path: The locker to create.
+                Any existing data at this location will be overwritten.
+        * password: The password to use for encryption.
+        """
         if not isinstance(password, bytes):
             raise TypeError(
                 "expected 'password' argument to be instance of 'bytes'"
@@ -100,6 +154,12 @@ class Locker:
 
     @_cache_open_locker
     def open(self):
+        """open() -> None
+        Open the locker and decrypt its contents.
+        Raises:
+        * cryptography.exceptions.InvalidKey if the password is incorrect.
+        * ValueError if the locker's contents were corrupted.
+        """
         with open(self.path, "rb") as f:
             salt = f.read(16)
             hashed_password = f.read(32)
@@ -131,25 +191,54 @@ class Locker:
 
     @_requires_open_locker
     def get(self, key):
+        """get(key: bytes) -> locker[key]
+        Get `key` from the locker.
+        Arguments:
+        * key: The key to retrieve from the locker.
+        Raises:
+        * TypeError if `key` is not a bytes object.
+        * KeyError if the key is not in the locker.
+        """
         _validate(key=key)
         if key not in self.contents:
-            raise KeyError("provided key not in locker")
+            raise KeyError("key '{key}' not in locker".format(key=key))
         return self.contents[key]
 
     @_requires_open_locker
     def set(self, key, value):
+        """set(key: bytes, value: bytes) -> None
+        Set `key` to `value`.
+        Arguments:
+        * key: The key used to identify the combination.
+        * value: The value to bind to the key.
+        Raises:
+        * TypeError if `key` is not a bytes object.
+                    if `value` is not a bytes object.
+        """
         _validate(key=key, value=value)
         self.contents[key] = value
 
     @_requires_open_locker
     def delete(self, key):
+        """delete(key: bytes) -> None
+        Delete `key` from the locker.
+        Arguments:
+        * key: The key to delete.
+        Raises:
+        * TypeError if `key` is not a bytes object.
+        """
         _validate(key=key)
         if key not in self.contents:
-            raise KeyError("provided key not in locker")
+            raise KeyError("key '{key}' not in locker".format(key=key))
         self.contents.pop(key)
         self._trash.append(key)
 
     def close(self):
+        """close() -> None
+        Close the locker and save any changes.
+        To access the locker after calling Locker.close,
+        you must call Locker.open again.
+        """
         locker = {}
         for name in self.contents:
             if name in self._trash:
