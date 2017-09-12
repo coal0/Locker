@@ -8,7 +8,7 @@ Locker is presumably compatible with all versions of Python 3, including the lat
 
 ## Quick start
 Each locker represents a storage space (file) encrypted using a separate password.
-To get started, just import the [`Locker`](#locker-class) class:
+To get started, just import the `Locker` class:
 
 ```python
 >>> from locker import Locker
