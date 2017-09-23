@@ -61,14 +61,14 @@ The `open` call should return with no traceback.
 
 ---
 
-Now that the locker has been opened, lets look at its `contents`:
+With the locker being opened, let's take a look at its `contents`:
 
 ```python
 >>> locker.contents
 {}
 ```
 
-Our locker is empty, but we can now change that!<br />
+Our locker is empty, but we can change that.<br />
 You can manually add `key:value` entries to the locker, or use the convenient `get`, `set` and `delete` methods:
 
 ```python
@@ -86,10 +86,10 @@ Note especially how all `key:value` pairs are `bytes` objects.<br />
 
 ---
 
-Now that you've made changes to your locker, write the changes to the file by calling `close`:
+To save any changes you made, call `close`:
 
 ```python
 >>> locker.close()
 ```
 
-This will save any changes you made. Don't forget to call this method after you're done modifying the locker!
+Don't forget to call this method after you're done modifying a locker, or your changes will be discarded.
