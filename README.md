@@ -4,7 +4,18 @@ A place to keep your valuables.
 ---
 
 Locker makes it easy to securely store data in a `key:value` scheme on a hard drive.<br />
-Locker is presumably compatible with all versions of Python 3, including the latest 3.7 release.<br />
+Locker is only compatible with Python 3 and upwards and requires [the `cryptography` library](https://cryptography.io/en/latest/).<br />
+
+---
+
+Locker is now on PyPi.org! Install with:
+
+```shell
+pip install python-locker
+```
+
+###### NOTE: You may need to replace `pip` with `pip3`, if available.
+
 
 ## Quick start
 Each locker represents a storage space (file) encrypted using a separate password.
